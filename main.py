@@ -1,5 +1,7 @@
 import os
 import time
+import json
+from pprint import pprint
 
 import requests
 from dotenv import load_dotenv
@@ -8,6 +10,7 @@ from hcloud.images import Image
 from hcloud.server_types import ServerType
 from hcloud.servers import ServersClient
 from hcloud.primary_ips import PrimaryIPsClient
+from hcloud.datacenters import DatacentersClient
 
 load_dotenv()
 Token = os.getenv("Token")
@@ -15,6 +18,24 @@ Token = os.getenv("Token")
 client = Client(token=Token)
 serverclient = ServersClient(client=client)
 primaryips = PrimaryIPsClient(client=client)
+datacenter = DatacentersClient(client=client)
+
+def getdtc():
+    dtc = {}
+    p = datacenter.get_all()
+
+    for i  in p:
+
+        tmp = {
+            'id': i.id,
+            'name': i.name,
+            'description': i.description,
+            'id_or_name': i.id_or_name
+        }
+        dtc[i.id] = tmp
+    return dtc
+
+
 
 
 # TODO: tidy up code
@@ -68,6 +89,7 @@ def unaasign_ip(server, primaryip):
 # TODO : datacenters loc id or name
 def assign_ip(server, primaryip, datacenter):
     # rs_ip = primaryips.create(name="primary", type="ipv4", datacenter=datacenter)
+
     rs_ip = primaryips.get_by_name("primary")
     pp = primaryips.assign(primary_ip=rs_ip, assignee_id=server.id)
     serverclient.power_on(server)
@@ -93,17 +115,26 @@ def create_vps():
 # TODO: add array for holding ips and counter
 # TODO: delete the extra ips
 
-# TODO: delete this section
-def show_vps_inf(id):
-    servers = client.servers.get_by_id(id)
-    return servers.public_net.ipv4.ip
+# def show_vps_inf(id):
+#     servers = client.servers.get_by_id(id)
+#     return servers.public_net.ipv4.ip
+
+
+# server = serverclient.get_by_id(45012665)
+# d = primaryips.get_by_id(54841603)
+# dc = d.datacenter
+
+if __name__ == '__main__':
+   dc_in_dic= getdtc()
+
+
+###
+# guide for me
+
+
 
 
 # server = create_vps()
-server = serverclient.get_by_id(45012665)
-# server_ip_by_id = server.public_net.primary_ipv4.id
-d = primaryips.get_by_id(54841603)
-dc = d.datacenter
 # print(server_ip_by_id)
 # print(server_id)
 # server_id = '45012095'
@@ -111,4 +142,9 @@ dc = d.datacenter
 # print(testip(ip))
 # time.sleep(30)
 # print(unaasign_ip(server,d))
-print(assign_ip(server, d, dc))
+# server_ip_by_id = server.public_net.primary_ipv4.id
+# print(assign_ip(server, d, dc))
+
+
+
+####
