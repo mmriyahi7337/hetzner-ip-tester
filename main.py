@@ -1,8 +1,5 @@
 import os
 import time
-import json
-from pprint import pprint
-
 import requests
 from dotenv import load_dotenv
 from hcloud import Client
@@ -20,22 +17,21 @@ serverclient = ServersClient(client=client)
 primaryips = PrimaryIPsClient(client=client)
 datacenter = DatacentersClient(client=client)
 
+
 def getdtc():
     dtc = {}
     p = datacenter.get_all()
 
-    for i  in p:
+    for i in p:
 
         tmp = {
-            'id': i.id,
-            'name': i.name,
-            'description': i.description,
-            'id_or_name': i.id_or_name
+            "id": i.id,
+            "name": i.name,
+            "description": i.description,
+            "id_or_name": i.id_or_name,
         }
         dtc[i.id] = tmp
     return dtc
-
-
 
 
 # TODO: tidy up code
@@ -43,31 +39,30 @@ def testip(ip):
     url = f"https://check-host.net/check-tcp?host={ip}:22"
 
     payload = {}
-    headers = {'Accept': 'application/json'}
+    headers = {"Accept": "application/json"}
 
     response = requests.request("GET", url, headers=headers, data=payload)
     respose = response.json()
-    result = respose['request_id']
+    result = respose["request_id"]
     url = f"https://check-host.net/check-result/{result}"
     res = requests.request("GET", url, headers=headers, data=payload)
     r = res.json()
     filtered_nodes = []
     for node in r:
-        if node.startswith('ir'):
+        if node.startswith("ir"):
             filtered_nodes.append(node)
     approve = 0
     denied = 0
 
     try:
         for i in filtered_nodes:
-            time = r[i][-1]['time']
+            time = r[i][-1]["time"]
             if time > 0:
                 approve = approve + 1
             else:
                 continue
         if approve >= 3:
             return True
-
 
     except:
         denied = 0
@@ -124,14 +119,12 @@ def create_vps():
 # d = primaryips.get_by_id(54841603)
 # dc = d.datacenter
 
-if __name__ == '__main__':
-   dc_in_dic= getdtc()
+if __name__ == "__main__":
+    dc_in_dic = getdtc()
 
 
 ###
 # guide for me
-
-
 
 
 # server = create_vps()
@@ -144,7 +137,6 @@ if __name__ == '__main__':
 # print(unaasign_ip(server,d))
 # server_ip_by_id = server.public_net.primary_ipv4.id
 # print(assign_ip(server, d, dc))
-
 
 
 ####
